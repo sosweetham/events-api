@@ -12,10 +12,10 @@ type Event struct {
 	Description string `binding:"required" json:"description"`
 	Location string `binding:"required" json:"location"`
 	DateTime time.Time `binding:"required" json:"dateTime"`
-	UserID int `json:"userId"`
+	UserID int64 `json:"userId"`
 }
 
-func (e Event) Save() error {
+func (e *Event) Save() error {
 	query := `
 	INSERT INTO events (name, description, location, dateTime, userId)
 	VALUES (?, ?, ?, ?, ?)
@@ -29,7 +29,8 @@ func (e Event) Save() error {
 	if err != nil {
 		return err
 	}
-	_, err = result.LastInsertId()
+	id, err := result.LastInsertId()
+	e.ID = id
 	return err
 }
 

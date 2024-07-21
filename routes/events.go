@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"kodski.com/events-api/models"
+	"kodski.com/events-api/utils"
 )
 
 func getEvents(c *gin.Context) {
@@ -50,6 +51,15 @@ func getEvent(c *gin.Context) {
 
 func createEvent(c *gin.Context) {
 	var event models.Event
+	jwtAuth, isAuthorized := c.Get("jwtAuth")
+	if !isAuthorized {
+		c.JSON(
+			http.StatusUnauthorized,
+			gin.H{"error": "Unauthorized"},
+		)
+		return
+	}
+	claims := jwtAuth.(*utils.JWTAuth)
 	err := c.ShouldBindJSON(&event)
 	if err != nil {
 		c.JSON(
@@ -58,7 +68,7 @@ func createEvent(c *gin.Context) {
 		)
 		return
 	}
-	event.UserID = 1
+	event.UserID = claims.UserId
 	err = event.Save()
 	if err != nil {
 		c.JSON(

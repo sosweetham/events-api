@@ -4,13 +4,17 @@ import (
 	"database/sql"
 
 	_ "github.com/mattn/go-sqlite3"
+	"kodski.com/events-api/env"
 )
 
 var DB *sql.DB
 
 func InitDB() {
 	var err error
-	DB, err = sql.Open("sqlite3", "api.db")
+
+	dbName := env.GetEnv("DB_NAME", false)
+
+	DB, err = sql.Open("sqlite3", dbName)
 
 	if err != nil {
 		panic(err)
@@ -44,8 +48,8 @@ func createTables() {
 		description TEXT NOT NULL,
 		location TEXT NOT NULL,
 		dateTime DATETIME NOT NULL,
-		userId INTEGER
-		FOREIGN KEY (userId) REFERENCES users(id)
+		userId INTEGER,
+		FOREIGN KEY(userId) REFERENCES users(id)
 	);
 	`
 
