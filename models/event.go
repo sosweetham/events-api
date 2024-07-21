@@ -61,10 +61,10 @@ func GetEventByID(id int64) (*Event, error) {
 	return &e, err
 }
 
-func (e Event) UpdateEvent() error {
+func (e *Event) UpdateEvent() error {
 	query := `
 	UPDATE events
-	SET name = ?, description = ?, location = ?, dateTime = ?, userId = ?
+	SET name = ?, description = ?, location = ?, dateTime = ?
 	WHERE id = ?
 	`
 	stmt, err := db.DB.Prepare(query)
@@ -72,7 +72,7 @@ func (e Event) UpdateEvent() error {
 		return err
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(e.Name, e.Description, e.Location, e.DateTime, e.UserID, e.ID)
+	_, err = stmt.Exec(e.Name, e.Description, e.Location, e.DateTime, e.ID)
 	return err
 }
 

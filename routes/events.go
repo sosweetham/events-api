@@ -85,6 +85,14 @@ func createEvent(c *gin.Context) {
 
 func updateEvent(c *gin.Context) {
 	eventId, err := strconv.ParseInt(c.Param("eventId"), 10, 64)
+	jwtAuth, isAuthorized := c.Get("jwtAuth")
+	if !isAuthorized {
+		c.JSON(
+			http.StatusUnauthorized,
+			gin.H{"error": "Unauthorized"},
+		)
+		return
+	}
 	if err != nil {
 		c.JSON(
 			http.StatusBadRequest,
@@ -92,7 +100,7 @@ func updateEvent(c *gin.Context) {
 		)
 		return
 	}
-	_, err = models.GetEventByID(eventId)
+	event, err := models.GetEventByID(eventId)
 	if err != nil {
 		c.JSON(
 			http.StatusInternalServerError,
@@ -101,7 +109,16 @@ func updateEvent(c *gin.Context) {
 		return
 	}
 	var updatedEvent models.Event
+	claims := jwtAuth.(*utils.JWTAuth)
+	if event.UserID != claims.UserId {
+		c.JSON(
+			http.StatusForbidden,
+			gin.H{"error": "Forbidden"},
+		)
+		return
+	}
 	err = c.ShouldBindJSON(&updatedEvent)
+	updatedEvent.UserID = claims.UserId
 	if err != nil {
 		c.JSON(
 			http.StatusBadRequest,
@@ -119,6 +136,14 @@ func updateEvent(c *gin.Context) {
 
 func deleteEvent(c *gin.Context) {
 	eventId, err := strconv.ParseInt(c.Param("eventId"), 10, 64)
+	jwtAuth, isAuthorized := c.Get("jwtAuth")
+	if !isAuthorized {
+		c.JSON(
+			http.StatusUnauthorized,
+			gin.H{"error": "Unauthorized"},
+		)
+		return
+	}
 	if err != nil {
 		c.JSON(
 			http.StatusBadRequest,
@@ -126,11 +151,19 @@ func deleteEvent(c *gin.Context) {
 		)
 		return
 	}
+	claims := jwtAuth.(*utils.JWTAuth)
 	event, err := models.GetEventByID(eventId)
 	if err != nil {
 		c.JSON(
 			http.StatusInternalServerError,
 			gin.H{"error": err.Error()},
+		)
+		return
+	}
+	if event.UserID != claims.UserId {
+		c.JSON(
+			http.StatusForbidden,
+			gin.H{"error": "Forbidden"},
 		)
 		return
 	}
