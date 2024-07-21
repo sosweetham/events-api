@@ -9,7 +9,7 @@ import (
 
 func main() {
 	env.LoadEnv()
-	
+
 	db.InitDB()
 	server := gin.Default()
 

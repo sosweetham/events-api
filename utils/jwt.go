@@ -7,8 +7,6 @@ import (
 	"kodski.com/events-api/env"
 )
 
-var jwtSecret = env.GetEnv("JWT_SECRET", false)
-
 type JWTAuth struct {
 	Email string `binding:"required" json:"email"`
 	UserId int64 `binding:"required" json:"userId"`
@@ -22,7 +20,7 @@ func (jwtAuth *JWTAuth) GenerateToken() (string, error) {
 		"exp": jwtAuth.Exp,
 	})
 
-	return token.SignedString([]byte(jwtSecret))
+	return token.SignedString([]byte(env.AppEnv.JWTSecret))
 }
 
 func NewJWTAuth(email string, userId int64, exp int64) *JWTAuth {
@@ -40,7 +38,7 @@ func VerifyToken(token string) (*JWTAuth, error) {
 			return nil, errors.New("unexpected signing method")
 		}
 
-		return []byte(jwtSecret), nil
+		return []byte(env.AppEnv.JWTSecret), nil
 	})
 
 	if err != nil {

@@ -12,7 +12,7 @@ var DB *sql.DB
 func InitDB() {
 	var err error
 
-	dbName := env.GetEnv("DB_NAME", false)
+	dbName := env.AppEnv.DBName
 
 	DB, err = sql.Open("sqlite3", dbName)
 
